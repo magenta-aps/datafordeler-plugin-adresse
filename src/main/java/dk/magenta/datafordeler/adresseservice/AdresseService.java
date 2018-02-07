@@ -1,18 +1,35 @@
 package dk.magenta.datafordeler.adresseservice;
 
+import dk.magenta.datafordeler.core.database.InterruptedPullFile;
+import dk.magenta.datafordeler.core.database.QueryManager;
 import dk.magenta.datafordeler.core.database.SessionManager;
 import dk.magenta.datafordeler.core.exception.DataFordelerException;
+import dk.magenta.datafordeler.core.exception.HttpNotFoundException;
+import dk.magenta.datafordeler.core.exception.InvalidClientInputException;
 import dk.magenta.datafordeler.core.exception.MissingParameterException;
+import dk.magenta.datafordeler.core.fapi.Query;
 import dk.magenta.datafordeler.core.user.DafoUserDetails;
 import dk.magenta.datafordeler.core.user.DafoUserManager;
 import dk.magenta.datafordeler.core.util.LoggerHelper;
+import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityEntity;
+import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityQuery;
+import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityData;
+import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityEffect;
+import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityEntity;
+import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityRegistration;
+import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import java.time.OffsetDateTime;
+import java.util.HashMap;
+import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/adresse")
@@ -32,6 +49,41 @@ public class AdresseService {
     public static final String PARAM_HOUSE = "husnr";
     public static final String PARAM_BNR = "bnr";
 
+
+    HashMap<Integer, UUID> municipalities = new HashMap<>();
+
+    @PostConstruct
+    public void loadMunicipalities() {
+        Session session = sessionManager.getSessionFactory().openSession();
+        try {
+            List<MunicipalityEntity> municipalities = QueryManager.getAllEntities(session, MunicipalityEntity.class);
+            for (MunicipalityEntity municipality : municipalities) {
+                MunicipalityData data = getData(municipality);
+                if (data != null) {
+                    this.municipalities.put(data.getCode(), municipality.getUUID());
+                }
+            }
+        } finally {
+            session.close();
+        }
+    }
+
+    private static MunicipalityData getData(MunicipalityEntity municipality) {
+        OffsetDateTime now = OffsetDateTime.now();
+        MunicipalityRegistration registration = municipality.getRegistrationAt(now);
+        if (registration != null) {
+            for (MunicipalityEffect effect : registration.getEffectsAt(now)) {
+                for (MunicipalityData data : effect.getDataItems()) {
+                    if (data.getCode() != 0) {
+                        return data;
+                    }
+                }
+            }
+        }
+        return null;
+    }
+
+
     /**
      * Finds all localities in a municipality. Only current data is included.
      * @param request HTTP request containing a municipality parameter
@@ -46,6 +98,23 @@ public class AdresseService {
                 "Incoming REST request for AddressService.locality with municipality {}", municipalityCode
         );
         checkParameterExistence(PARAM_MUNICIPALITY, municipalityCode);
+        int code = parameterAsInt(PARAM_MUNICIPALITY, municipalityCode);
+        UUID municipalityUUID = this.municipalities.get(code);
+        if (municipalityUUID == null) {
+            throw new HttpNotFoundException("Municipality with code "+code+" not found");
+        }
+
+        LocalityQuery query = new LocalityQuery();
+        setQueryNow(query);
+        query.setMunicipality(municipalityUUID);
+        Session session = sessionManager.getSessionFactory().openSession();
+        try {
+            List<LocalityEntity> localities = QueryManager.getAllEntities(session, query, LocalityEntity.class);
+            System.out.println(localities);
+        } finally {
+            session.close();
+        }
+
         return "";
     }
 
@@ -107,5 +176,21 @@ public class AdresseService {
         if (value == null || value.trim().isEmpty()) {
             throw new MissingParameterException(name);
         }
+    }
+
+    private static int parameterAsInt(String name, String value) throws InvalidClientInputException {
+        try {
+            return Integer.parseInt(value, 10);
+        } catch (NumberFormatException e) {
+            throw new InvalidClientInputException("Parameter "+name+" must be a number", e);
+        }
+    }
+
+    private static void setQueryNow(Query query) {
+        OffsetDateTime now = OffsetDateTime.now();
+        query.setRegistrationFrom(now);
+        query.setRegistrationTo(now);
+        query.setEffectFrom(now);
+        query.setEffectTo(now);
     }
 }

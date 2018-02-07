@@ -1,3 +1,4 @@
+import dk.magenta.datafordeler.adresseservice.AdresseService;
 import dk.magenta.datafordeler.core.Application;
 import dk.magenta.datafordeler.core.database.Entity;
 import dk.magenta.datafordeler.core.database.QueryManager;
@@ -53,25 +54,41 @@ public class AdresseServiceTest {
     @Autowired
     private GladdrregPlugin gladdrregPlugin;
 
+    @Autowired
+    AdresseService adresseService;
+
 
     @Test
-    public void testLocalityService() {
-        HttpEntity<String> httpEntity = new HttpEntity<String>("", new HttpHeaders());
-        ResponseEntity<String> response = restTemplate.exchange(
-                "/adresse/lokalitet/",
-                HttpMethod.GET,
-                httpEntity,
-                String.class
-        );
-        Assert.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+    public void testLocalityService() throws IOException, DataFordelerException {
+        load();
+        try {
+            HttpEntity<String> httpEntity = new HttpEntity<String>("", new HttpHeaders());
+            ResponseEntity<String> response = restTemplate.exchange(
+                    "/adresse/lokalitet/",
+                    HttpMethod.GET,
+                    httpEntity,
+                    String.class
+            );
+            Assert.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
-        response = restTemplate.exchange(
-                "/adresse/lokalitet/?kommune=955",
-                HttpMethod.GET,
-                httpEntity,
-                String.class
-        );
-        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+            response = restTemplate.exchange(
+                    "/adresse/lokalitet/?kommune=1234",
+                    HttpMethod.GET,
+                    httpEntity,
+                    String.class
+            );
+            Assert.assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+
+            response = restTemplate.exchange(
+                    "/adresse/lokalitet/?kommune=955",
+                    HttpMethod.GET,
+                    httpEntity,
+                    String.class
+            );
+            Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        } finally {
+            unload();
+        }
     }
 
     @Test
@@ -145,6 +162,7 @@ public class AdresseServiceTest {
             loadBuilding(session);
             loadAddress(session);
             transaction.commit();
+            adresseService.loadMunicipalities();
         } finally {
             session.close();
         }
