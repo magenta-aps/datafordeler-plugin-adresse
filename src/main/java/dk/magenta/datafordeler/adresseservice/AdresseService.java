@@ -17,6 +17,8 @@ import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityData;
 import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityEffect;
 import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityEntity;
 import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityRegistration;
+import dk.magenta.datafordeler.gladdrreg.data.road.RoadEntity;
+import dk.magenta.datafordeler.gladdrreg.data.road.RoadQuery;
 import org.hibernate.Session;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +54,9 @@ public class AdresseService {
 
     HashMap<Integer, UUID> municipalities = new HashMap<>();
 
+    /**
+     * Load known municipalities into a local map of municipalityCode: UUID
+     */
     @PostConstruct
     public void loadMunicipalities() {
         Session session = sessionManager.getSessionFactory().openSession();
@@ -99,14 +104,14 @@ public class AdresseService {
         );
         checkParameterExistence(PARAM_MUNICIPALITY, municipalityCode);
         int code = parameterAsInt(PARAM_MUNICIPALITY, municipalityCode);
-        UUID municipalityUUID = this.municipalities.get(code);
-        if (municipalityUUID == null) {
+        UUID municipality = this.municipalities.get(code);
+        if (municipality == null) {
             throw new HttpNotFoundException("Municipality with code "+code+" not found");
         }
 
         LocalityQuery query = new LocalityQuery();
         setQueryNow(query);
-        query.setMunicipality(municipalityUUID);
+        query.setMunicipality(municipality.toString());
         Session session = sessionManager.getSessionFactory().openSession();
         try {
             List<LocalityEntity> localities = QueryManager.getAllEntities(session, query, LocalityEntity.class);
@@ -125,12 +130,24 @@ public class AdresseService {
      */
     @RequestMapping("/vej")
     public String getRoads(HttpServletRequest request) throws DataFordelerException {
-        String localityId = request.getParameter(PARAM_LOCALITY);
+        String localityUUID = request.getParameter(PARAM_LOCALITY);
         DafoUserDetails user = dafoUserManager.getUserFromRequest(request);
         LoggerHelper loggerHelper = new LoggerHelper(log, request, user);
         loggerHelper.info(
-                "Incoming REST request for AddressService.road with locality {}", localityId
-        );checkParameterExistence(PARAM_LOCALITY, localityId);
+                "Incoming REST request for AddressService.road with locality {}", localityUUID
+        );
+        checkParameterExistence(PARAM_LOCALITY, localityUUID);
+        UUID locality = parameterAsUUID(PARAM_LOCALITY, localityUUID);
+        RoadQuery query = new RoadQuery();
+        setQueryNow(query);
+        query.setLocality(locality.toString());
+        Session session = sessionManager.getSessionFactory().openSession();
+        try {
+            List<RoadEntity> roads = QueryManager.getAllEntities(session, query, RoadEntity.class);
+            System.out.println(roads);
+        } finally {
+            session.close();
+        }
         return "";
     }
 
@@ -183,6 +200,14 @@ public class AdresseService {
             return Integer.parseInt(value, 10);
         } catch (NumberFormatException e) {
             throw new InvalidClientInputException("Parameter "+name+" must be a number", e);
+        }
+    }
+
+    private static UUID parameterAsUUID(String name, String value) throws InvalidClientInputException {
+        try {
+            return UUID.fromString(value);
+        } catch (IllegalArgumentException e) {
+            throw new InvalidClientInputException("Parameter "+name+" must be a uuid", e);
         }
     }
 
