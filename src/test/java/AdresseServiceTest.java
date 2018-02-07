@@ -35,6 +35,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
@@ -62,6 +63,14 @@ public class AdresseServiceTest {
                 httpEntity,
                 String.class
         );
+        Assert.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        response = restTemplate.exchange(
+                "/adresse/lokalitet/?kommune=955",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -70,6 +79,14 @@ public class AdresseServiceTest {
         HttpEntity<String> httpEntity = new HttpEntity<String>("", new HttpHeaders());
         ResponseEntity<String> response = restTemplate.exchange(
                 "/adresse/vej/",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
+        Assert.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        response = restTemplate.exchange(
+                "/adresse/vej/?lokalitet=4d9cd2a0-89f1-4acc-a259-4fd139006d87",
                 HttpMethod.GET,
                 httpEntity,
                 String.class
@@ -86,6 +103,14 @@ public class AdresseServiceTest {
                 httpEntity,
                 String.class
         );
+        Assert.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        response = restTemplate.exchange(
+                "/adresse/hus/?vej=e4dc6c09-baae-40b1-8696-57771b2f7a81",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
@@ -94,6 +119,14 @@ public class AdresseServiceTest {
         HttpEntity<String> httpEntity = new HttpEntity<String>("", new HttpHeaders());
         ResponseEntity<String> response = restTemplate.exchange(
                 "/adresse/adresse/",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
+        Assert.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        response = restTemplate.exchange(
+                "/adresse/adresse/?vej=e4dc6c09-baae-40b1-8696-57771b2f7a81",
                 HttpMethod.GET,
                 httpEntity,
                 String.class

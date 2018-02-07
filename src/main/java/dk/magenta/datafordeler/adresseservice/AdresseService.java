@@ -1,6 +1,8 @@
-package dk.magenta.datafordeler.flytning;
+package dk.magenta.datafordeler.adresseservice;
 
 import dk.magenta.datafordeler.core.database.SessionManager;
+import dk.magenta.datafordeler.core.exception.DataFordelerException;
+import dk.magenta.datafordeler.core.exception.MissingParameterException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -26,8 +28,10 @@ public class AdresseService {
      * @return Json-formatted string containing a list of found objects
      */
     @RequestMapping("/lokalitet")
-    public String getLocalities(HttpServletRequest request) {
+    public String getLocalities(HttpServletRequest request) throws DataFordelerException {
+        System.out.println(request.getParameterMap());
         String municipalityCode = request.getParameter(PARAM_MUNICIPALITY);
+        checkParameterExistence(PARAM_MUNICIPALITY, municipalityCode);
         return "";
     }
 
@@ -37,8 +41,9 @@ public class AdresseService {
      * @return Json-formatted string containing a list of found objects
      */
     @RequestMapping("/vej")
-    public String getRoads(HttpServletRequest request) {
+    public String getRoads(HttpServletRequest request) throws DataFordelerException {
         String localityId = request.getParameter(PARAM_LOCALITY);
+        checkParameterExistence(PARAM_LOCALITY, localityId);
         return "";
     }
 
@@ -48,8 +53,9 @@ public class AdresseService {
      * @return Json-formatted string containing a list of found objects
      */
     @RequestMapping("/hus")
-    public String getBuildings(HttpServletRequest request) {
+    public String getBuildings(HttpServletRequest request) throws DataFordelerException {
         String roadId = request.getParameter(PARAM_ROAD);
+        checkParameterExistence(PARAM_ROAD, roadId);
         return "";
     }
 
@@ -61,10 +67,17 @@ public class AdresseService {
      * @return Json-formatted string containing a list of found objects
      */
     @RequestMapping("/adresse")
-    public String getAddresses(HttpServletRequest request) {
+    public String getAddresses(HttpServletRequest request) throws DataFordelerException {
         String roadId = request.getParameter(PARAM_ROAD);
+        checkParameterExistence(PARAM_ROAD, roadId);
         String houseNumber = request.getParameter(PARAM_HOUSE);
         String buildingNumber = request.getParameter(PARAM_BNR);
         return "";
+    }
+
+    private static void checkParameterExistence(String name, String value) throws MissingParameterException {
+        if (value == null || value.trim().isEmpty()) {
+            throw new MissingParameterException(name);
+        }
     }
 }
