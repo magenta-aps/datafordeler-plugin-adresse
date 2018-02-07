@@ -1,3 +1,4 @@
+import com.fasterxml.jackson.databind.ObjectMapper;
 import dk.magenta.datafordeler.adresseservice.AdresseService;
 import dk.magenta.datafordeler.core.Application;
 import dk.magenta.datafordeler.core.database.Entity;
@@ -59,6 +60,9 @@ public class AdresseServiceTest {
     @Autowired
     AdresseService adresseService;
 
+    @Autowired
+    ObjectMapper objectMapper;
+
 
     @Test
     public void testLocalityService() throws IOException, DataFordelerException {
@@ -86,6 +90,11 @@ public class AdresseServiceTest {
                 String.class
         );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertTrue(
+                objectMapper.readTree("[{\"uuid\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"navn\":\"Paamiut\",\"forkortelse\":\"PAA\"}]").equals(
+                    objectMapper.readTree(response.getBody())
+                )
+        );
     }
 
     @Test

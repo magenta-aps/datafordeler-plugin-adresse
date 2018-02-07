@@ -1,5 +1,9 @@
 package dk.magenta.datafordeler.adresseservice;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+import dk.magenta.datafordeler.core.database.DataItem;
 import dk.magenta.datafordeler.core.database.InterruptedPullFile;
 import dk.magenta.datafordeler.core.database.QueryManager;
 import dk.magenta.datafordeler.core.database.SessionManager;
@@ -13,6 +17,7 @@ import dk.magenta.datafordeler.core.user.DafoUserManager;
 import dk.magenta.datafordeler.core.util.LoggerHelper;
 import dk.magenta.datafordeler.gladdrreg.data.address.AddressEntity;
 import dk.magenta.datafordeler.gladdrreg.data.address.AddressQuery;
+import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityData;
 import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityEntity;
 import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityQuery;
 import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityData;
@@ -33,6 +38,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.time.OffsetDateTime;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 
 @RestController
@@ -45,6 +51,9 @@ public class AdresseService {
     @Autowired
     private DafoUserManager dafoUserManager;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     private Logger log = LoggerFactory.getLogger(AdresseService.class);
 
     public static final String PARAM_MUNICIPALITY = "kommune";
@@ -52,6 +61,10 @@ public class AdresseService {
     public static final String PARAM_ROAD = "vej";
     public static final String PARAM_HOUSE = "husnr";
     public static final String PARAM_BNR = "bnr";
+
+    public static final String OUTPUT_UUID = "uuid";
+    public static final String OUTPUT_NAME = "navn";
+    public static final String OUTPUT_ABBREVIATION = "forkortelse";
 
 
     HashMap<Integer, UUID> municipalities = new HashMap<>();
@@ -117,12 +130,26 @@ public class AdresseService {
         Session session = sessionManager.getSessionFactory().openSession();
         try {
             List<LocalityEntity> localities = QueryManager.getAllEntities(session, query, LocalityEntity.class);
-            System.out.println(localities);
+            ArrayNode results = objectMapper.createArrayNode();
+            for (LocalityEntity locality : localities) {
+                Set<DataItem> dataItems = locality.getCurrent();
+                ObjectNode localityNode = objectMapper.createObjectNode();
+                localityNode.put(OUTPUT_UUID, locality.getUUID().toString());
+                for (DataItem dataItem : dataItems) {
+                    LocalityData data = (LocalityData) dataItem;
+                    if (data.getName() != null) {
+                        localityNode.put(OUTPUT_NAME, data.getName());
+                    }
+                    if (data.getAbbrev() != null) {
+                        localityNode.put(OUTPUT_ABBREVIATION, data.getAbbrev());
+                    }
+                }
+                results.add(localityNode);
+            }
+            return results.toString();
         } finally {
             session.close();
         }
-
-        return "";
     }
 
     /**
