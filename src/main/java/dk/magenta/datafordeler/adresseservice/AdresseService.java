@@ -191,15 +191,33 @@ public class AdresseService {
      */
     @RequestMapping("/adresse")
     public String getAddresses(HttpServletRequest request) throws DataFordelerException {
-        String roadId = request.getParameter(PARAM_ROAD);
+        String roadUUID = request.getParameter(PARAM_ROAD);
         String houseNumber = request.getParameter(PARAM_HOUSE);
         String buildingNumber = request.getParameter(PARAM_BNR);
         DafoUserDetails user = dafoUserManager.getUserFromRequest(request);
         LoggerHelper loggerHelper = new LoggerHelper(log, request, user);
         loggerHelper.info(
-                "Incoming REST request for AddressService.address with road {}, houseNumber {}, bNumber {}", roadId, houseNumber, buildingNumber
+                "Incoming REST request for AddressService.address with road {}, houseNumber {}, bNumber {}", roadUUID, houseNumber, buildingNumber
         );
-        checkParameterExistence(PARAM_ROAD, roadId);
+        checkParameterExistence(PARAM_ROAD, roadUUID);
+
+        UUID road = parameterAsUUID(PARAM_ROAD, roadUUID);
+        AddressQuery query = new AddressQuery();
+        setQueryNow(query);
+        query.setRoad(road.toString());
+        if (houseNumber != null && !houseNumber.trim().isEmpty()) {
+            query.setHouseNumber(houseNumber.trim());
+        }
+        if (buildingNumber != null && !buildingNumber.trim().isEmpty()) {
+            query.setBnr(buildingNumber);
+        }
+        Session session = sessionManager.getSessionFactory().openSession();
+        try {
+            List<AddressEntity> addresses = QueryManager.getAllEntities(session, query, AddressEntity.class);
+            System.out.println(addresses);
+        } finally {
+            session.close();
+        }
         return "";
     }
 

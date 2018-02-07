@@ -154,6 +154,30 @@ public class AdresseServiceTest {
                 String.class
         );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        response = restTemplate.exchange(
+                "/adresse/adresse/?husnr=5",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
+        Assert.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        response = restTemplate.exchange(
+                "/adresse/adresse/?vej=e4dc6c09-baae-40b1-8696-57771b2f7a81&husnr=5",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        response = restTemplate.exchange(
+                "/adresse/adresse/?vej=e4dc6c09-baae-40b1-8696-57771b2f7a81&bnr=53191b3a-ba25-44d0-8381-4d1b86d4c38d",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
     }
 
     @Before
