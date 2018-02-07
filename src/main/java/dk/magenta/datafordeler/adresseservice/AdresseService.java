@@ -11,6 +11,8 @@ import dk.magenta.datafordeler.core.fapi.Query;
 import dk.magenta.datafordeler.core.user.DafoUserDetails;
 import dk.magenta.datafordeler.core.user.DafoUserManager;
 import dk.magenta.datafordeler.core.util.LoggerHelper;
+import dk.magenta.datafordeler.gladdrreg.data.address.AddressEntity;
+import dk.magenta.datafordeler.gladdrreg.data.address.AddressQuery;
 import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityEntity;
 import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityQuery;
 import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityData;
@@ -158,13 +160,25 @@ public class AdresseService {
      */
     @RequestMapping("/hus")
     public String getBuildings(HttpServletRequest request) throws DataFordelerException {
-        String roadId = request.getParameter(PARAM_ROAD);
+        String roadUUID = request.getParameter(PARAM_ROAD);
         DafoUserDetails user = dafoUserManager.getUserFromRequest(request);
         LoggerHelper loggerHelper = new LoggerHelper(log, request, user);
         loggerHelper.info(
-                "Incoming REST request for AddressService.building with road {}", roadId
+                "Incoming REST request for AddressService.building with road {}", roadUUID
         );
-        checkParameterExistence(PARAM_ROAD, roadId);
+        checkParameterExistence(PARAM_ROAD, roadUUID);
+
+        UUID road = parameterAsUUID(PARAM_ROAD, roadUUID);
+        AddressQuery query = new AddressQuery();
+        setQueryNow(query);
+        query.setRoad(road.toString());
+        Session session = sessionManager.getSessionFactory().openSession();
+        try {
+            List<AddressEntity> addresses = QueryManager.getAllEntities(session, query, AddressEntity.class);
+            System.out.println(addresses);
+        } finally {
+            session.close();
+        }
         return "";
     }
 

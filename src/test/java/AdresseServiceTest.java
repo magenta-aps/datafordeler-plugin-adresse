@@ -100,6 +100,14 @@ public class AdresseServiceTest {
         Assert.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
 
         response = restTemplate.exchange(
+                "/adresse/vej/?lokalitet=invalid-uuid",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
+        Assert.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        response = restTemplate.exchange(
                 "/adresse/vej/?lokalitet=4d9cd2a0-89f1-4acc-a259-4fd139006d87",
                 HttpMethod.GET,
                 httpEntity,
