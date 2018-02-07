@@ -24,6 +24,7 @@ import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityData;
 import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityEffect;
 import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityEntity;
 import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityRegistration;
+import dk.magenta.datafordeler.gladdrreg.data.road.RoadData;
 import dk.magenta.datafordeler.gladdrreg.data.road.RoadEntity;
 import dk.magenta.datafordeler.gladdrreg.data.road.RoadQuery;
 import org.hibernate.Session;
@@ -65,6 +66,10 @@ public class AdresseService {
     public static final String OUTPUT_UUID = "uuid";
     public static final String OUTPUT_NAME = "navn";
     public static final String OUTPUT_ABBREVIATION = "forkortelse";
+    public static final String OUTPUT_ROADCODE = "vejkode";
+    public static final String OUTPUT_ALTNAME = "andet_navn";
+    public static final String OUTPUT_CPRNAME = "cpr_navn";
+    public static final String OUTPUT_SHORTNAME = "forkortet_navn";
 
 
     HashMap<Integer, UUID> municipalities = new HashMap<>();
@@ -173,11 +178,35 @@ public class AdresseService {
         Session session = sessionManager.getSessionFactory().openSession();
         try {
             List<RoadEntity> roads = QueryManager.getAllEntities(session, query, RoadEntity.class);
-            System.out.println(roads);
+            ArrayNode results = objectMapper.createArrayNode();
+            for (RoadEntity road : roads) {
+                Set<DataItem> dataItems = road.getCurrent();
+                ObjectNode roadNode = objectMapper.createObjectNode();
+                roadNode.put(OUTPUT_UUID, road.getUUID().toString());
+                for (DataItem dataItem : dataItems) {
+                    RoadData data = (RoadData) dataItem;
+                    if (data.getCode() != 0) {
+                        roadNode.put(OUTPUT_ROADCODE, data.getCode());
+                    }
+                    if (data.getName() != null) {
+                        roadNode.put(OUTPUT_NAME, data.getName());
+                    }
+                    if (data.getAlternateName() != null) {
+                        roadNode.put(OUTPUT_ALTNAME, data.getAlternateName());
+                    }
+                    if (data.getCprName() != null) {
+                        roadNode.put(OUTPUT_CPRNAME, data.getCprName());
+                    }
+                    if (data.getShortName() != null) {
+                        roadNode.put(OUTPUT_SHORTNAME, data.getShortName());
+                    }
+                }
+                results.add(roadNode);
+            }
+            return results.toString();
         } finally {
             session.close();
         }
-        return "";
     }
 
     /**

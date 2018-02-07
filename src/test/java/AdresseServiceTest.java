@@ -98,7 +98,7 @@ public class AdresseServiceTest {
     }
 
     @Test
-    public void testRoadService() {
+    public void testRoadService() throws IOException {
         HttpEntity<String> httpEntity = new HttpEntity<String>("", new HttpHeaders());
         ResponseEntity<String> response = restTemplate.exchange(
                 "/adresse/vej/",
@@ -123,6 +123,11 @@ public class AdresseServiceTest {
                 String.class
         );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertTrue(
+                objectMapper.readTree("[{\"uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"navn\":\"Aadarujuup Aqquserna\",\"forkortet_navn\":\"Aadarujuup Aqq.\"}]").equals(
+                        objectMapper.readTree(response.getBody())
+                )
+        );
     }
 
     @Test
