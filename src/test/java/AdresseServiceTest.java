@@ -131,7 +131,7 @@ public class AdresseServiceTest {
     }
 
     @Test
-    public void testBuildingService() {
+    public void testBuildingService() throws IOException {
         HttpEntity<String> httpEntity = new HttpEntity<String>("", new HttpHeaders());
         ResponseEntity<String> response = restTemplate.exchange(
                 "/adresse/hus/",
@@ -148,6 +148,11 @@ public class AdresseServiceTest {
                 String.class
         );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertTrue(
+                objectMapper.readTree("[{\"husnummer\":\"5\",\"b_nummer\":\"293\",\"b_kaldenavn\":\"testhus\"}]").equals(
+                        objectMapper.readTree(response.getBody())
+                )
+        );
     }
 
     @Test

@@ -15,8 +15,11 @@ import dk.magenta.datafordeler.core.fapi.Query;
 import dk.magenta.datafordeler.core.user.DafoUserDetails;
 import dk.magenta.datafordeler.core.user.DafoUserManager;
 import dk.magenta.datafordeler.core.util.LoggerHelper;
+import dk.magenta.datafordeler.gladdrreg.data.address.AddressData;
 import dk.magenta.datafordeler.gladdrreg.data.address.AddressEntity;
 import dk.magenta.datafordeler.gladdrreg.data.address.AddressQuery;
+import dk.magenta.datafordeler.gladdrreg.data.bnumber.BNumberData;
+import dk.magenta.datafordeler.gladdrreg.data.bnumber.BNumberEntity;
 import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityData;
 import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityEntity;
 import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityQuery;
@@ -70,6 +73,10 @@ public class AdresseService {
     public static final String OUTPUT_ALTNAME = "andet_navn";
     public static final String OUTPUT_CPRNAME = "cpr_navn";
     public static final String OUTPUT_SHORTNAME = "forkortet_navn";
+    public static final String OUTPUT_BNUMBER = "b_nummer";
+    public static final String OUTPUT_BCALLNAME = "b_kaldenavn";
+    public static final String OUTPUT_HOUSENUMBER = "husnummer";
+
 
 
     HashMap<Integer, UUID> municipalities = new HashMap<>();
@@ -223,19 +230,53 @@ public class AdresseService {
                 "Incoming REST request for AddressService.building with road {}", roadUUID
         );
         checkParameterExistence(PARAM_ROAD, roadUUID);
-
         UUID road = parameterAsUUID(PARAM_ROAD, roadUUID);
-        AddressQuery query = new AddressQuery();
-        setQueryNow(query);
-        query.setRoad(road.toString());
+
         Session session = sessionManager.getSessionFactory().openSession();
         try {
-            List<AddressEntity> addresses = QueryManager.getAllEntities(session, query, AddressEntity.class);
-            System.out.println(addresses);
+            org.hibernate.query.Query<Object[]> query = session.createQuery(
+
+                "SELECT DISTINCT e, b FROM "+AddressData.class.getCanonicalName()+" d " +
+                "JOIN d.effects v " +
+                "JOIN v.registration r " +
+                "JOIN r.entity e " +
+                "JOIN d."+AddressData.DB_FIELD_ROAD+" d_road " +
+                "JOIN d."+AddressData.DB_FIELD_BNUMBER+" d_bNumber " +
+                        "JOIN "+BNumberEntity.class.getCanonicalName()+" b ON b.identification = d_bNumber " +
+                "WHERE d_road.uuid = :d_road_uuid"
+
+            );
+            query.setParameter("d_road_uuid", road);
+
+            ArrayNode results = objectMapper.createArrayNode();
+            for (Object[] result : query.getResultList()) {
+                AddressEntity addressEntity = (AddressEntity) result[0];
+                BNumberEntity bNumberEntity = (BNumberEntity) result[1];
+                ObjectNode addressNode = objectMapper.createObjectNode();
+
+                Set<DataItem> addressDataItems = addressEntity.getCurrent();
+                Set<DataItem> bNumberDataItems = bNumberEntity.getCurrent();
+                for (DataItem dataItem : addressDataItems) {
+                    AddressData data = (AddressData) dataItem;
+                    if (data.getHouseNumber() != null) {
+                        addressNode.put(OUTPUT_HOUSENUMBER, data.getHouseNumber());
+                    }
+                }
+                for (DataItem dataItem : bNumberDataItems) {
+                    BNumberData data = (BNumberData) dataItem;
+                    if (data.getCode() != null && !data.getCode().isEmpty()) {
+                        addressNode.put(OUTPUT_BNUMBER, data.getCode());
+                    }
+                    if (data.getCallname() != null && !data.getCallname().isEmpty()) {
+                        addressNode.put(OUTPUT_BCALLNAME, data.getCallname());
+                    }
+                }
+                results.add(addressNode);
+            }
+            return results.toString();
         } finally {
             session.close();
         }
-        return "";
     }
 
     /**
