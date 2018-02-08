@@ -308,9 +308,8 @@ public class AdresseService {
         }
         Session session = sessionManager.getSessionFactory().openSession();
         try {
-            // We only get bnumber references (uuids) here, and must
-            // look them up in the bnumber table
-            HashSet<UUID> bNumbers = new HashSet<>();
+            // We only get bnumber references here, and must look them up in the bnumber table
+            HashSet<Identification> bNumbers = new HashSet<>();
             List<AddressEntity> addressEntities = QueryManager.getAllEntities(session, query, AddressEntity.class);
             ArrayNode results = objectMapper.createArrayNode();
             for (AddressEntity addressEntity : addressEntities) {
@@ -318,25 +317,25 @@ public class AdresseService {
                 for (DataItem dataItem : addressDataItems) {
                     AddressData data = (AddressData) dataItem;
                     if (data.getbNumber() != null) {
-                        bNumbers.add(data.getbNumber().getUuid());
+                        bNumbers.add(data.getbNumber());
                     }
                 }
             }
 
-            HashMap<UUID, String> bNumberMap = new HashMap<>();
+            HashMap<Identification, String> bNumberMap = new HashMap<>();
             org.hibernate.query.Query<Object[]> bQuery = session.createQuery(
-                    "SELECT DISTINCT e, e.identification.uuid FROM "+BNumberEntity.class.getCanonicalName()+" e "+
-                    "WHERE e.identification.uuid in (:uuids)"
+                    "SELECT DISTINCT e, e.identification FROM "+BNumberEntity.class.getCanonicalName()+" e "+
+                    "WHERE e.identification in (:identifications)"
             );
-            bQuery.setParameterList("uuids", bNumbers);
+            bQuery.setParameterList("identifications", bNumbers);
 
             for (Object[] resultItem : bQuery.getResultList()) {
                 BNumberEntity bNumberEntity = (BNumberEntity) resultItem[0];
-                UUID uuid = (UUID) resultItem[1];
+                Identification identification = (Identification) resultItem[1];
                 for (DataItem dataItem : bNumberEntity.getCurrent()) {
                     BNumberData data = (BNumberData) dataItem;
                     if (data.getCode() != null) {
-                        bNumberMap.put(uuid, data.getCode());
+                        bNumberMap.put(identification, data.getCode());
                         break;
                     }
                 }
@@ -358,7 +357,7 @@ public class AdresseService {
                         addressNode.put(OUTPUT_DOOR, data.getRoom());
                     }
                     if (data.getbNumber() != null) {
-                        String code = bNumberMap.get(data.getbNumber().getUuid());
+                        String code = bNumberMap.get(data.getbNumber());
                         if (code != null) {
                             addressNode.put(OUTPUT_BNUMBER, code);
                         }
