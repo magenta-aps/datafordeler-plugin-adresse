@@ -144,6 +144,7 @@ public class AdresseService {
 
         LocalityQuery query = new LocalityQuery();
         setQueryNow(query);
+        setQueryNoLimit(query);
         query.setMunicipality(municipality.toString());
         Session session = sessionManager.getSessionFactory().openSession();
         try {
@@ -187,6 +188,7 @@ public class AdresseService {
         UUID locality = parameterAsUUID(PARAM_LOCALITY, localityUUID);
         RoadQuery query = new RoadQuery();
         setQueryNow(query);
+        setQueryNoLimit(query);
         query.setLocality(locality.toString());
         Session session = sessionManager.getSessionFactory().openSession();
         try {
@@ -240,6 +242,7 @@ public class AdresseService {
 
         AddressQuery addressQuery = new AddressQuery();
         setQueryNow(addressQuery);
+        setQueryNoLimit(addressQuery);
         addressQuery.setRoad(road.toString());
 
         Session session = sessionManager.getSessionFactory().openSession();
@@ -300,6 +303,7 @@ public class AdresseService {
 
         AddressQuery query = new AddressQuery();
         setQueryNow(query);
+        setQueryNoLimit(query);
         query.setRoad(road.toString());
         if (houseNumber != null && !houseNumber.trim().isEmpty()) {
             query.setHouseNumber(houseNumber.trim());
@@ -562,5 +566,9 @@ public class AdresseService {
         query.setRegistrationTo(now);
         query.setEffectFrom(now);
         query.setEffectTo(now);
+    }
+    private static void setQueryNoLimit(Query query) {
+        query.setPage(0);
+        query.setPageSize(Integer.MAX_VALUE);
     }
 }
