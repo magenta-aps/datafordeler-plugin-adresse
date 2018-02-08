@@ -568,7 +568,7 @@ public class AdresseService {
         query.setEffectTo(now);
     }
     private static void setQueryNoLimit(Query query) {
-        query.setPage(0);
+        query.setPage(1);
         query.setPageSize(Integer.MAX_VALUE);
     }
 }
