@@ -156,6 +156,46 @@ public class AdresseServiceTest {
     }
 
     @Test
+    public void testAddressDetailsService() throws IOException {
+        HttpEntity<String> httpEntity = new HttpEntity<String>("", new HttpHeaders());
+        ResponseEntity<String> response = restTemplate.exchange(
+                "/adresse/adresseoplysninger/",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
+        Assert.assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+
+        response = restTemplate.exchange(
+                "/adresse/adresseoplysninger/?adresse=01234567-89ab-cdef-0123-456789abcdef",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertTrue(
+                objectMapper.readTree("{}").equals(
+                        objectMapper.readTree(response.getBody())
+                )
+        );
+
+        response = restTemplate.exchange(
+                "/adresse/adresseoplysninger/?adresse=6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertTrue(
+                objectMapper.readTree("{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"5\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955}").equals(
+                        objectMapper.readTree(response.getBody())
+                )
+        );
+
+    }
+
+
+    @Test
     public void testAddressService() throws IOException {
         HttpEntity<String> httpEntity = new HttpEntity<String>("", new HttpHeaders());
         ResponseEntity<String> response = restTemplate.exchange(
@@ -239,6 +279,7 @@ public class AdresseServiceTest {
                 )
         );
     }
+
 
     @Before
     public void load() throws IOException, DataFordelerException {
