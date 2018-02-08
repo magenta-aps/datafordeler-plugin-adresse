@@ -238,41 +238,36 @@ public class AdresseService {
         checkParameterExistence(PARAM_ROAD, roadUUID);
         UUID road = parameterAsUUID(PARAM_ROAD, roadUUID);
 
+        AddressQuery addressQuery = new AddressQuery();
+        setQueryNow(addressQuery);
+        addressQuery.setRoad(road.toString());
+
         Session session = sessionManager.getSessionFactory().openSession();
         try {
-            org.hibernate.query.Query<Object[]> query = session.createQuery(
-                "SELECT DISTINCT e, b FROM "+AddressData.class.getCanonicalName()+" d " +
-                "JOIN d.effects v " +
-                "JOIN v.registration r " +
-                "JOIN r.entity e " +
-                "JOIN d."+AddressData.DB_FIELD_ROAD+" d_road " +
-                "JOIN d."+AddressData.DB_FIELD_BNUMBER+" d_bNumber " +
-                "JOIN "+BNumberEntity.class.getCanonicalName()+" b ON b.identification = d_bNumber " +
-                "WHERE d_road.uuid = :d_road_uuid"
-            );
-            query.setParameter("d_road_uuid", road);
-
             ArrayNode results = objectMapper.createArrayNode();
-            for (Object[] result : query.getResultList()) {
-                AddressEntity addressEntity = (AddressEntity) result[0];
-                BNumberEntity bNumberEntity = (BNumberEntity) result[1];
-                ObjectNode addressNode = objectMapper.createObjectNode();
 
+            List<AddressEntity> addressEntities = QueryManager.getAllEntities(session, addressQuery, AddressEntity.class);
+            HashMap<Identification, BNumberEntity> bNumberMap = getBNumbers(session, addressEntities);
+
+            for (AddressEntity addressEntity : addressEntities) {
+                ObjectNode addressNode = objectMapper.createObjectNode();
                 Set<DataItem> addressDataItems = addressEntity.getCurrent();
-                Set<DataItem> bNumberDataItems = bNumberEntity.getCurrent();
                 for (DataItem dataItem : addressDataItems) {
-                    AddressData data = (AddressData) dataItem;
-                    if (data.getHouseNumber() != null) {
-                        addressNode.put(OUTPUT_HOUSENUMBER, data.getHouseNumber());
+                    AddressData addressData = (AddressData) dataItem;
+                    if (addressData.getHouseNumber() != null) {
+                        addressNode.put(OUTPUT_HOUSENUMBER, addressData.getHouseNumber());
                     }
-                }
-                for (DataItem dataItem : bNumberDataItems) {
-                    BNumberData data = (BNumberData) dataItem;
-                    if (data.getCode() != null && !data.getCode().isEmpty()) {
-                        addressNode.put(OUTPUT_BNUMBER, data.getCode());
-                    }
-                    if (data.getCallname() != null && !data.getCallname().isEmpty()) {
-                        addressNode.put(OUTPUT_BCALLNAME, data.getCallname());
+                    if (addressData.getbNumber() != null) {
+                        BNumberEntity bNumberEntity = bNumberMap.get(addressData.getbNumber());
+                        for (DataItem bNumberDataItem : bNumberEntity.getCurrent()) {
+                            BNumberData bNumberData = (BNumberData) bNumberDataItem;
+                            if (bNumberData.getCode() != null) {
+                                addressNode.put(OUTPUT_BNUMBER, bNumberData.getCode());
+                            }
+                            if (bNumberData.getCallname() != null && !bNumberData.getCallname().isEmpty()) {
+                                addressNode.put(OUTPUT_BCALLNAME, bNumberData.getCallname());
+                            }
+                        }
                     }
                 }
                 results.add(addressNode);
@@ -317,27 +312,30 @@ public class AdresseService {
             // We only get bnumber references here, and must look them up in the bnumber table
             List<AddressEntity> addressEntities = QueryManager.getAllEntities(session, query, AddressEntity.class);
             ArrayNode results = objectMapper.createArrayNode();
-            HashMap<Identification, String> bNumberMap = getBNumbers(session, addressEntities);
+            HashMap<Identification, BNumberEntity> bNumberMap = getBNumbers(session, addressEntities);
 
             for (AddressEntity addressEntity : addressEntities) {
                 Set<DataItem> addressDataItems = addressEntity.getCurrent();
                 ObjectNode addressNode = objectMapper.createObjectNode();
                 addressNode.put(OUTPUT_UUID, addressEntity.getUUID().toString());
                 for (DataItem dataItem : addressDataItems) {
-                    AddressData data = (AddressData) dataItem;
-                    if (data.getHouseNumber() != null) {
-                        addressNode.put(OUTPUT_HOUSENUMBER, data.getHouseNumber());
+                    AddressData addressData = (AddressData) dataItem;
+                    if (addressData.getHouseNumber() != null) {
+                        addressNode.put(OUTPUT_HOUSENUMBER, addressData.getHouseNumber());
                     }
-                    if (data.getFloor() != null && !data.getFloor().isEmpty()) {
-                        addressNode.put(OUTPUT_FLOOR, data.getFloor());
+                    if (addressData.getFloor() != null && !addressData.getFloor().isEmpty()) {
+                        addressNode.put(OUTPUT_FLOOR, addressData.getFloor());
                     }
-                    if (data.getRoom() != null && !data.getRoom().isEmpty()) {
-                        addressNode.put(OUTPUT_DOOR, data.getRoom());
+                    if (addressData.getRoom() != null && !addressData.getRoom().isEmpty()) {
+                        addressNode.put(OUTPUT_DOOR, addressData.getRoom());
                     }
-                    if (data.getbNumber() != null) {
-                        String code = bNumberMap.get(data.getbNumber());
-                        if (code != null) {
-                            addressNode.put(OUTPUT_BNUMBER, code);
+                    if (addressData.getbNumber() != null) {
+                        BNumberEntity bNumberEntity = bNumberMap.get(addressData.getbNumber());
+                        for (DataItem bNumberDataItem : bNumberEntity.getCurrent()) {
+                            BNumberData bNumberData = (BNumberData) bNumberDataItem;
+                            if (bNumberData.getCode() != null) {
+                                addressNode.put(OUTPUT_BNUMBER, bNumberData.getCode());
+                            }
                         }
                     }
                 }
@@ -376,7 +374,7 @@ public class AdresseService {
 
             AddressEntity addressEntity = QueryManager.getEntity(session, address, AddressEntity.class);
             if (addressEntity != null) {
-                HashMap<Identification, String> bNumberMap = getBNumbers(session, Collections.singletonList(addressEntity));
+                HashMap<Identification, BNumberEntity> bNumberMap = getBNumbers(session, Collections.singletonList(addressEntity));
                 HashMap<Identification, RoadEntity> roadMap = getRoads(session, Collections.singletonList(addressEntity));
                 HashMap<Identification, LocalityEntity> localityMap = getLocalities(session, roadMap.values());
 
@@ -393,9 +391,12 @@ public class AdresseService {
                         addressNode.put(OUTPUT_DOOR, addressData.getRoom());
                     }
                     if (addressData.getbNumber() != null) {
-                        String code = bNumberMap.get(addressData.getbNumber());
-                        if (code != null) {
-                            addressNode.put(OUTPUT_BNUMBER, code);
+                        BNumberEntity bNumberEntity = bNumberMap.get(addressData.getbNumber());
+                        for (DataItem bNumberDataItem : bNumberEntity.getCurrent()) {
+                            BNumberData bNumberData = (BNumberData) bNumberDataItem;
+                            if (bNumberData.getCode() != null) {
+                                addressNode.put(OUTPUT_BNUMBER, bNumberData.getCode());
+                            }
                         }
                     }
                     if (addressData.getRoad() != null && roadMap.keySet().contains(addressData.getRoad())) {
@@ -439,7 +440,7 @@ public class AdresseService {
         }
     }
 
-    private static HashMap<Identification, String> getBNumbers(Session session, Collection<AddressEntity> addressEntities) {
+    private static HashMap<Identification, BNumberEntity> getBNumbers(Session session, Collection<AddressEntity> addressEntities) {
         HashSet<Identification> bNumbers = new HashSet<>();
         for (AddressEntity addressEntity : addressEntities) {
             Set<DataItem> addressDataItems = addressEntity.getCurrent();
@@ -453,8 +454,8 @@ public class AdresseService {
         return getBNumbers(session, bNumbers);
     }
 
-    private static HashMap<Identification, String> getBNumbers(Session session, HashSet<Identification> identifications) {
-        HashMap<Identification, String> bNumberMap = new HashMap<>();
+    private static HashMap<Identification, BNumberEntity> getBNumbers(Session session, HashSet<Identification> identifications) {
+        HashMap<Identification, BNumberEntity> bNumberMap = new HashMap<>();
         org.hibernate.query.Query<Object[]> bQuery = session.createQuery(
                 "SELECT DISTINCT e, e.identification FROM "+BNumberEntity.class.getCanonicalName()+" e "+
                 "WHERE e.identification in (:identifications)"
@@ -464,13 +465,7 @@ public class AdresseService {
         for (Object[] resultItem : bQuery.getResultList()) {
             BNumberEntity bNumberEntity = (BNumberEntity) resultItem[0];
             Identification identification = (Identification) resultItem[1];
-            for (DataItem dataItem : bNumberEntity.getCurrent()) {
-                BNumberData data = (BNumberData) dataItem;
-                if (data.getCode() != null) {
-                    bNumberMap.put(identification, data.getCode());
-                    break;
-                }
-            }
+            bNumberMap.put(identification, bNumberEntity);
         }
         return bNumberMap;
     }
