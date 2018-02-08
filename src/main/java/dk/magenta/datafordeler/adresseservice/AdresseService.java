@@ -242,7 +242,7 @@ public class AdresseService {
                 "JOIN r.entity e " +
                 "JOIN d."+AddressData.DB_FIELD_ROAD+" d_road " +
                 "JOIN d."+AddressData.DB_FIELD_BNUMBER+" d_bNumber " +
-                        "JOIN "+BNumberEntity.class.getCanonicalName()+" b ON b.identification = d_bNumber " +
+                "JOIN "+BNumberEntity.class.getCanonicalName()+" b ON b.identification = d_bNumber " +
                 "WHERE d_road.uuid = :d_road_uuid"
 
             );
