@@ -156,7 +156,7 @@ public class AdresseServiceTest {
     }
 
     @Test
-    public void testAddressService() {
+    public void testAddressService() throws IOException {
         HttpEntity<String> httpEntity = new HttpEntity<String>("", new HttpHeaders());
         ResponseEntity<String> response = restTemplate.exchange(
                 "/adresse/adresse/",
@@ -173,6 +173,11 @@ public class AdresseServiceTest {
                 String.class
         );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertTrue(
+                objectMapper.readTree("[{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"5\",\"b_nummer\":\"293\"}]").equals(
+                        objectMapper.readTree(response.getBody())
+                )
+        );
 
         response = restTemplate.exchange(
                 "/adresse/adresse/?husnr=5",
@@ -189,6 +194,24 @@ public class AdresseServiceTest {
                 String.class
         );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertTrue(
+                objectMapper.readTree("[{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"5\",\"b_nummer\":\"293\"}]").equals(
+                        objectMapper.readTree(response.getBody())
+                )
+        );
+
+        response = restTemplate.exchange(
+                "/adresse/adresse/?vej=e4dc6c09-baae-40b1-8696-57771b2f7a81&husnr=6",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertTrue(
+                objectMapper.readTree("[]").equals(
+                        objectMapper.readTree(response.getBody())
+                )
+        );
 
         response = restTemplate.exchange(
                 "/adresse/adresse/?vej=e4dc6c09-baae-40b1-8696-57771b2f7a81&bnr=53191b3a-ba25-44d0-8381-4d1b86d4c38d",
@@ -197,6 +220,24 @@ public class AdresseServiceTest {
                 String.class
         );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertTrue(
+                objectMapper.readTree("[{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"5\",\"b_nummer\":\"293\"}]").equals(
+                        objectMapper.readTree(response.getBody())
+                )
+        );
+
+        response = restTemplate.exchange(
+                "/adresse/adresse/?vej=e4dc6c09-baae-40b1-8696-57771b2f7a81&bnr=01234567-89ab-cdef-0123-456789abcdef",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+        Assert.assertTrue(
+                objectMapper.readTree("[]").equals(
+                        objectMapper.readTree(response.getBody())
+                )
+        );
     }
 
     @Before

@@ -3,23 +3,23 @@ package dk.magenta.datafordeler.adresseservice;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import dk.magenta.datafordeler.core.database.DataItem;
-import dk.magenta.datafordeler.core.database.InterruptedPullFile;
-import dk.magenta.datafordeler.core.database.QueryManager;
-import dk.magenta.datafordeler.core.database.SessionManager;
+import dk.magenta.datafordeler.core.database.*;
 import dk.magenta.datafordeler.core.exception.DataFordelerException;
 import dk.magenta.datafordeler.core.exception.HttpNotFoundException;
 import dk.magenta.datafordeler.core.exception.InvalidClientInputException;
 import dk.magenta.datafordeler.core.exception.MissingParameterException;
+import dk.magenta.datafordeler.core.fapi.ParameterMap;
 import dk.magenta.datafordeler.core.fapi.Query;
 import dk.magenta.datafordeler.core.user.DafoUserDetails;
 import dk.magenta.datafordeler.core.user.DafoUserManager;
+import dk.magenta.datafordeler.core.util.ListHashMap;
 import dk.magenta.datafordeler.core.util.LoggerHelper;
 import dk.magenta.datafordeler.gladdrreg.data.address.AddressData;
 import dk.magenta.datafordeler.gladdrreg.data.address.AddressEntity;
 import dk.magenta.datafordeler.gladdrreg.data.address.AddressQuery;
 import dk.magenta.datafordeler.gladdrreg.data.bnumber.BNumberData;
 import dk.magenta.datafordeler.gladdrreg.data.bnumber.BNumberEntity;
+import dk.magenta.datafordeler.gladdrreg.data.bnumber.BNumberQuery;
 import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityData;
 import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityEntity;
 import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityQuery;
@@ -31,6 +31,7 @@ import dk.magenta.datafordeler.gladdrreg.data.road.RoadData;
 import dk.magenta.datafordeler.gladdrreg.data.road.RoadEntity;
 import dk.magenta.datafordeler.gladdrreg.data.road.RoadQuery;
 import org.hibernate.Session;
+import org.opensaml.xml.signature.Q;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,10 +41,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.time.OffsetDateTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 
 @RestController
 @RequestMapping("/adresse")
@@ -76,6 +74,8 @@ public class AdresseService {
     public static final String OUTPUT_BNUMBER = "b_nummer";
     public static final String OUTPUT_BCALLNAME = "b_kaldenavn";
     public static final String OUTPUT_HOUSENUMBER = "husnummer";
+    public static final String OUTPUT_FLOOR = "etage";
+    public static final String OUTPUT_DOOR = "doer";
 
 
 
@@ -235,7 +235,6 @@ public class AdresseService {
         Session session = sessionManager.getSessionFactory().openSession();
         try {
             org.hibernate.query.Query<Object[]> query = session.createQuery(
-
                 "SELECT DISTINCT e, b FROM "+AddressData.class.getCanonicalName()+" d " +
                 "JOIN d.effects v " +
                 "JOIN v.registration r " +
@@ -244,7 +243,6 @@ public class AdresseService {
                 "JOIN d."+AddressData.DB_FIELD_BNUMBER+" d_bNumber " +
                 "JOIN "+BNumberEntity.class.getCanonicalName()+" b ON b.identification = d_bNumber " +
                 "WHERE d_road.uuid = :d_road_uuid"
-
             );
             query.setParameter("d_road_uuid", road);
 
@@ -297,8 +295,8 @@ public class AdresseService {
                 "Incoming REST request for AddressService.address with road {}, houseNumber {}, bNumber {}", roadUUID, houseNumber, buildingNumber
         );
         checkParameterExistence(PARAM_ROAD, roadUUID);
-
         UUID road = parameterAsUUID(PARAM_ROAD, roadUUID);
+
         AddressQuery query = new AddressQuery();
         setQueryNow(query);
         query.setRoad(road.toString());
@@ -310,12 +308,69 @@ public class AdresseService {
         }
         Session session = sessionManager.getSessionFactory().openSession();
         try {
-            List<AddressEntity> addresses = QueryManager.getAllEntities(session, query, AddressEntity.class);
-            System.out.println(addresses);
+            // We only get bnumber references (uuids) here, and must
+            // look them up in the bnumber table
+            HashSet<UUID> bNumbers = new HashSet<>();
+            List<AddressEntity> addressEntities = QueryManager.getAllEntities(session, query, AddressEntity.class);
+            ArrayNode results = objectMapper.createArrayNode();
+            for (AddressEntity addressEntity : addressEntities) {
+                Set<DataItem> addressDataItems = addressEntity.getCurrent();
+                for (DataItem dataItem : addressDataItems) {
+                    AddressData data = (AddressData) dataItem;
+                    if (data.getbNumber() != null) {
+                        bNumbers.add(data.getbNumber().getUuid());
+                    }
+                }
+            }
+
+            HashMap<UUID, String> bNumberMap = new HashMap<>();
+            org.hibernate.query.Query<Object[]> bQuery = session.createQuery(
+                    "SELECT DISTINCT e, e.identification.uuid FROM "+BNumberEntity.class.getCanonicalName()+" e "+
+                    "WHERE e.identification.uuid in (:uuids)"
+            );
+            bQuery.setParameterList("uuids", bNumbers);
+
+            for (Object[] resultItem : bQuery.getResultList()) {
+                BNumberEntity bNumberEntity = (BNumberEntity) resultItem[0];
+                UUID uuid = (UUID) resultItem[1];
+                for (DataItem dataItem : bNumberEntity.getCurrent()) {
+                    BNumberData data = (BNumberData) dataItem;
+                    if (data.getCode() != null) {
+                        bNumberMap.put(uuid, data.getCode());
+                        break;
+                    }
+                }
+            }
+
+            for (AddressEntity addressEntity : addressEntities) {
+                Set<DataItem> addressDataItems = addressEntity.getCurrent();
+                ObjectNode addressNode = objectMapper.createObjectNode();
+                addressNode.put(OUTPUT_UUID, addressEntity.getUUID().toString());
+                for (DataItem dataItem : addressDataItems) {
+                    AddressData data = (AddressData) dataItem;
+                    if (data.getHouseNumber() != null) {
+                        addressNode.put(OUTPUT_HOUSENUMBER, data.getHouseNumber());
+                    }
+                    if (data.getFloor() != null && !data.getFloor().isEmpty()) {
+                        addressNode.put(OUTPUT_FLOOR, data.getFloor());
+                    }
+                    if (data.getRoom() != null && !data.getRoom().isEmpty()) {
+                        addressNode.put(OUTPUT_DOOR, data.getRoom());
+                    }
+                    if (data.getbNumber() != null) {
+                        String code = bNumberMap.get(data.getbNumber().getUuid());
+                        if (code != null) {
+                            addressNode.put(OUTPUT_BNUMBER, code);
+                        }
+                    }
+                }
+                results.add(addressNode);
+            }
+
+            return results.toString();
         } finally {
             session.close();
         }
-        return "";
     }
 
     private static void checkParameterExistence(String name, String value) throws MissingParameterException {
