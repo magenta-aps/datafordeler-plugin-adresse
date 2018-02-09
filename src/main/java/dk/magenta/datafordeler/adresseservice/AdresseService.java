@@ -82,6 +82,7 @@ public class AdresseService {
     public static final String OUTPUT_HOUSENUMBER = "husnummer";
     public static final String OUTPUT_FLOOR = "etage";
     public static final String OUTPUT_DOOR = "doer";
+    public static final String OUTPUT_USAGE = "benyttelsestype";
 
 
 
@@ -424,6 +425,7 @@ public class AdresseService {
                 addressNode.set(OUTPUT_LOCALITYUUID, null);
                 addressNode.set(OUTPUT_LOCALITYNAME, null);
                 addressNode.set(OUTPUT_MUNICIPALITYCODE, null);
+                addressNode.set(OUTPUT_USAGE, null);
                 for (DataItem dataItem : addressEntity.getCurrent()) {
                     AddressData addressData = (AddressData) dataItem;
                     if (addressData.getHouseNumber() != null) {
