@@ -308,10 +308,13 @@ public class AdresseService {
         setQueryNoLimit(query);
         query.setRoad(road.toString());
         if (houseNumber != null && !houseNumber.trim().isEmpty()) {
-            query.setHouseNumber(houseNumber.trim());
+            houseNumber = houseNumber.trim();
+            query.addHouseNumber(houseNumber);
+            query.addHouseNumber("0"+houseNumber);
+            query.addHouseNumber("00"+houseNumber);
         }
         if (buildingNumber != null && !buildingNumber.trim().isEmpty()) {
-            query.setBnr(buildingNumber);
+            query.setBnr(buildingNumber.trim());
         }
         Session session = sessionManager.getSessionFactory().openSession();
         try {

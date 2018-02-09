@@ -149,7 +149,7 @@ public class AdresseServiceTest {
         );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertTrue(
-                objectMapper.readTree("[{\"husnummer\":\"5\",\"b_nummer\":\"293\",\"b_kaldenavn\":\"testhus\"}]").equals(
+                objectMapper.readTree("[{\"husnummer\":\"05\",\"b_nummer\":\"293\",\"b_kaldenavn\":\"testhus\"}]").equals(
                         objectMapper.readTree(response.getBody())
                 )
         );
@@ -175,7 +175,7 @@ public class AdresseServiceTest {
         );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertTrue(
-                objectMapper.readTree("[{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"5\",\"b_nummer\":\"293\"}]").equals(
+                objectMapper.readTree("[{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\"}]").equals(
                         objectMapper.readTree(response.getBody())
                 )
         );
@@ -196,7 +196,7 @@ public class AdresseServiceTest {
         );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertTrue(
-                objectMapper.readTree("[{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"5\",\"b_nummer\":\"293\"}]").equals(
+                objectMapper.readTree("[{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\"}]").equals(
                         objectMapper.readTree(response.getBody())
                 )
         );
@@ -222,7 +222,7 @@ public class AdresseServiceTest {
         );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertTrue(
-                objectMapper.readTree("[{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"5\",\"b_nummer\":\"293\"}]").equals(
+                objectMapper.readTree("[{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\"}]").equals(
                         objectMapper.readTree(response.getBody())
                 )
         );
@@ -274,7 +274,7 @@ public class AdresseServiceTest {
         );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
         Assert.assertTrue(
-                objectMapper.readTree("{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"5\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955}").equals(
+                objectMapper.readTree("{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955}").equals(
                         objectMapper.readTree(response.getBody())
                 )
         );
