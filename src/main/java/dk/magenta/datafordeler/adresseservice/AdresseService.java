@@ -154,6 +154,8 @@ public class AdresseService {
                 Set<DataItem> dataItems = locality.getCurrent();
                 ObjectNode localityNode = objectMapper.createObjectNode();
                 localityNode.put(OUTPUT_UUID, locality.getUUID().toString());
+                localityNode.set(OUTPUT_NAME, null);
+                localityNode.set(OUTPUT_ABBREVIATION, null);
                 for (DataItem dataItem : dataItems) {
                     LocalityData data = (LocalityData) dataItem;
                     if (data.getName() != null) {
@@ -198,6 +200,11 @@ public class AdresseService {
                 Set<DataItem> dataItems = road.getCurrent();
                 ObjectNode roadNode = objectMapper.createObjectNode();
                 roadNode.put(OUTPUT_UUID, road.getUUID().toString());
+                roadNode.set(OUTPUT_ROADCODE, null);
+                roadNode.set(OUTPUT_NAME, null);
+                roadNode.set(OUTPUT_ALTNAME, null);
+                roadNode.set(OUTPUT_CPRNAME, null);
+                roadNode.set(OUTPUT_SHORTNAME, null);
                 for (DataItem dataItem : dataItems) {
                     RoadData data = (RoadData) dataItem;
                     if (data.getCode() != 0) {
@@ -256,6 +263,9 @@ public class AdresseService {
                 for (AddressEntity addressEntity : addressEntities) {
                     ObjectNode addressNode = objectMapper.createObjectNode();
                     Set<DataItem> addressDataItems = addressEntity.getCurrent();
+                    addressNode.set(OUTPUT_HOUSENUMBER, null);
+                    addressNode.set(OUTPUT_BNUMBER, null);
+                    addressNode.set(OUTPUT_BCALLNAME, null);
                     for (DataItem dataItem : addressDataItems) {
                         AddressData addressData = (AddressData) dataItem;
                         if (addressData.getHouseNumber() != null) {
@@ -338,6 +348,10 @@ public class AdresseService {
                     Set<DataItem> addressDataItems = addressEntity.getCurrent();
                     ObjectNode addressNode = objectMapper.createObjectNode();
                     addressNode.put(OUTPUT_UUID, addressEntity.getUUID().toString());
+                    addressNode.set(OUTPUT_HOUSENUMBER, null);
+                    addressNode.set(OUTPUT_FLOOR, null);
+                    addressNode.set(OUTPUT_DOOR, null);
+                    addressNode.set(OUTPUT_BNUMBER, null);
                     for (DataItem dataItem : addressDataItems) {
                         AddressData addressData = (AddressData) dataItem;
                         if (addressData.getHouseNumber() != null) {
@@ -400,6 +414,16 @@ public class AdresseService {
                 HashMap<Identification, LocalityEntity> localityMap = getLocalities(session, roadMap.values());
 
                 addressNode.put(OUTPUT_UUID, addressEntity.getUUID().toString());
+                addressNode.set(OUTPUT_HOUSENUMBER, null);
+                addressNode.set(OUTPUT_FLOOR, null);
+                addressNode.set(OUTPUT_DOOR, null);
+                addressNode.set(OUTPUT_BNUMBER, null);
+                addressNode.set(OUTPUT_ROADUUID, null);
+                addressNode.set(OUTPUT_ROADCODE, null);
+                addressNode.set(OUTPUT_ROADNAME, null);
+                addressNode.set(OUTPUT_LOCALITYUUID, null);
+                addressNode.set(OUTPUT_LOCALITYNAME, null);
+                addressNode.set(OUTPUT_MUNICIPALITYCODE, null);
                 for (DataItem dataItem : addressEntity.getCurrent()) {
                     AddressData addressData = (AddressData) dataItem;
                     if (addressData.getHouseNumber() != null) {
