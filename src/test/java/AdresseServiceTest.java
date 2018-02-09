@@ -215,7 +215,7 @@ public class AdresseServiceTest {
         );
 
         response = restTemplate.exchange(
-                "/adresse/adresse/?vej=e4dc6c09-baae-40b1-8696-57771b2f7a81&bnr=53191b3a-ba25-44d0-8381-4d1b86d4c38d",
+                "/adresse/adresse/?vej=e4dc6c09-baae-40b1-8696-57771b2f7a81&b_nummer=293",
                 HttpMethod.GET,
                 httpEntity,
                 String.class
@@ -228,7 +228,7 @@ public class AdresseServiceTest {
         );
 
         response = restTemplate.exchange(
-                "/adresse/adresse/?vej=e4dc6c09-baae-40b1-8696-57771b2f7a81&bnr=01234567-89ab-cdef-0123-456789abcdef",
+                "/adresse/adresse/?vej=e4dc6c09-baae-40b1-8696-57771b2f7a81&b_nummer=123",
                 HttpMethod.GET,
                 httpEntity,
                 String.class

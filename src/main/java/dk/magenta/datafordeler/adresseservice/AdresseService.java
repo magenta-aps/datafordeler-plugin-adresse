@@ -62,7 +62,7 @@ public class AdresseService {
     public static final String PARAM_LOCALITY = "lokalitet";
     public static final String PARAM_ROAD = "vej";
     public static final String PARAM_HOUSE = "husnr";
-    public static final String PARAM_BNR = "bnr";
+    public static final String PARAM_BNR = "b_nummer";
     public static final String PARAM_ADDRESS = "adresse";
 
     public static final String OUTPUT_UUID = "uuid";
@@ -303,21 +303,31 @@ public class AdresseService {
         checkParameterExistence(PARAM_ROAD, roadUUID);
         UUID road = parameterAsUUID(PARAM_ROAD, roadUUID);
 
-        AddressQuery query = new AddressQuery();
-        setQueryNow(query);
-        setQueryNoLimit(query);
-        query.setRoad(road.toString());
-        if (houseNumber != null && !houseNumber.trim().isEmpty()) {
-            houseNumber = houseNumber.trim();
-            query.addHouseNumber(houseNumber);
-            query.addHouseNumber("0"+houseNumber);
-            query.addHouseNumber("00"+houseNumber);
-        }
-        if (buildingNumber != null && !buildingNumber.trim().isEmpty()) {
-            query.setBnr(buildingNumber.trim());
-        }
         Session session = sessionManager.getSessionFactory().openSession();
         try {
+
+            AddressQuery query = new AddressQuery();
+            setQueryNow(query);
+            setQueryNoLimit(query);
+            query.setRoad(road.toString());
+            if (houseNumber != null && !houseNumber.trim().isEmpty()) {
+                houseNumber = houseNumber.trim();
+                query.addHouseNumber(houseNumber);
+                query.addHouseNumber("0"+houseNumber);
+                query.addHouseNumber("00"+houseNumber);
+            }
+            if (buildingNumber != null && !buildingNumber.trim().isEmpty()) {
+                BNumberQuery bNumberQuery = new BNumberQuery();
+                bNumberQuery.setCode(buildingNumber.trim());
+                List<BNumberEntity> bNumberEntities = QueryManager.getAllEntities(session, bNumberQuery, BNumberEntity.class);
+                if (bNumberEntities.isEmpty()) {
+                    // Queried bnumber not found - return no results
+                    return "[]";
+                }
+                for (BNumberEntity bNumberEntity : bNumberEntities) {
+                    query.addBnr(bNumberEntity.getUUID().toString());
+                }
+            }
             // We only get bnumber references here, and must look them up in the bnumber table
             List<AddressEntity> addressEntities = QueryManager.getAllEntities(session, query, AddressEntity.class);
             ArrayNode results = objectMapper.createArrayNode();
