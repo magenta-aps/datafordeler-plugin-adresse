@@ -180,12 +180,12 @@ public class AdresseServiceTest {
                 "Non-matching response "+response.getBody(),
                 objectMapper.readTree("[" +
                         "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"1\",\"doer\":null}," +
-                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"2\",\"doer\":null}" +
+                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3b\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"2\",\"doer\":null}" +
                         "]").equals(
                         objectMapper.readTree(response.getBody())
                 ) ||
                 objectMapper.readTree("[" +
-                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"2\",\"doer\":null}," +
+                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3b\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"2\",\"doer\":null}," +
                         "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"1\",\"doer\":null}" +
                         "]").equals(
                         objectMapper.readTree(response.getBody())
@@ -211,12 +211,12 @@ public class AdresseServiceTest {
                 "Non-matching response "+response.getBody(),
                 objectMapper.readTree("[" +
                         "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"1\",\"doer\":null}," +
-                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"2\",\"doer\":null}" +
+                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3b\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"2\",\"doer\":null}" +
                         "]").equals(
                         objectMapper.readTree(response.getBody())
                 ) ||
                         objectMapper.readTree("[" +
-                                "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"2\",\"doer\":null}," +
+                                "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3b\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"2\",\"doer\":null}," +
                                 "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"1\",\"doer\":null}" +
                                 "]").equals(
                                 objectMapper.readTree(response.getBody())
@@ -248,12 +248,12 @@ public class AdresseServiceTest {
                 "Non-matching response "+response.getBody(),
                 objectMapper.readTree("[" +
                         "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"1\",\"doer\":null}," +
-                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"2\",\"doer\":null}" +
+                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3b\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"2\",\"doer\":null}" +
                         "]").equals(
                         objectMapper.readTree(response.getBody())
                 ) ||
                         objectMapper.readTree("[" +
-                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"2\",\"doer\":null}," +
+                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3b\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"2\",\"doer\":null}," +
                         "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"etage\":\"1\",\"doer\":null}" +
                         "]").equals(
                         objectMapper.readTree(response.getBody())
@@ -312,11 +312,11 @@ public class AdresseServiceTest {
                 "Non-matching response "+response.getBody(),
                 objectMapper.readTree(
                         "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955,\"etage\":\"1\",\"doer\":null,\"benyttelsestype\":null}," +
-                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955,\"etage\":\"2\",\"doer\":null,\"benyttelsestype\":null}").equals(
+                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3b\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955,\"etage\":\"2\",\"doer\":null,\"benyttelsestype\":null}").equals(
                         objectMapper.readTree(response.getBody())
                 ) ||
                         objectMapper.readTree(
-                                "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955,\"etage\":\"2\",\"doer\":null,\"benyttelsestype\":null}," +
+                                "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3b\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955,\"etage\":\"2\",\"doer\":null,\"benyttelsestype\":null}," +
                                         "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955,\"etage\":\"1\",\"doer\":null,\"benyttelsestype\":null}").equals(
                                 objectMapper.readTree(response.getBody())
                         )
