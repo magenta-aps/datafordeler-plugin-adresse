@@ -31,7 +31,6 @@ import dk.magenta.datafordeler.gladdrreg.data.road.RoadData;
 import dk.magenta.datafordeler.gladdrreg.data.road.RoadEntity;
 import dk.magenta.datafordeler.gladdrreg.data.road.RoadQuery;
 import org.hibernate.Session;
-import org.opensaml.xml.signature.Q;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -40,6 +39,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.time.OffsetDateTime;
 import java.util.*;
 
@@ -129,6 +130,12 @@ public class AdresseService {
      * @return Json-formatted string containing a list of found objects
      */
     @RequestMapping("/lokalitet")
+    public void getLocalities(HttpServletRequest request, HttpServletResponse response) throws DataFordelerException, IOException {
+        String payload = this.getLocalities(request);
+        setHeaders(response);
+        response.getWriter().write(payload);
+    }
+
     public String getLocalities(HttpServletRequest request) throws DataFordelerException {
         String municipalityCode = request.getParameter(PARAM_MUNICIPALITY);
         DafoUserDetails user = dafoUserManager.getUserFromRequest(request);
@@ -180,6 +187,12 @@ public class AdresseService {
      * @return Json-formatted string containing a list of found objects
      */
     @RequestMapping("/vej")
+    public void getRoads(HttpServletRequest request, HttpServletResponse response) throws DataFordelerException, IOException {
+        String payload = this.getRoads(request);
+        setHeaders(response);
+        response.getWriter().write(payload);
+    }
+
     public String getRoads(HttpServletRequest request) throws DataFordelerException {
         String localityUUID = request.getParameter(PARAM_LOCALITY);
         DafoUserDetails user = dafoUserManager.getUserFromRequest(request);
@@ -238,6 +251,12 @@ public class AdresseService {
      * @return Json-formatted string containing a list of found objects
      */
     @RequestMapping("/hus")
+    public void getBuildings(HttpServletRequest request, HttpServletResponse response) throws DataFordelerException, IOException {
+        String payload = this.getBuildings(request);
+        setHeaders(response);
+        response.getWriter().write(payload);
+    }
+
     public String getBuildings(HttpServletRequest request) throws DataFordelerException {
         String roadUUID = request.getParameter(PARAM_ROAD);
         DafoUserDetails user = dafoUserManager.getUserFromRequest(request);
@@ -302,6 +321,12 @@ public class AdresseService {
      * @return Json-formatted string containing a list of found objects
      */
     @RequestMapping("/adresse")
+    public void getAddresses(HttpServletRequest request, HttpServletResponse response) throws DataFordelerException, IOException {
+        String payload = this.getAddresses(request);
+        setHeaders(response);
+        response.getWriter().write(payload);
+    }
+
     public String getAddresses(HttpServletRequest request) throws DataFordelerException {
         String roadUUID = request.getParameter(PARAM_ROAD);
         String houseNumber = request.getParameter(PARAM_HOUSE);
@@ -392,6 +417,12 @@ public class AdresseService {
      * @return Json-formatted string containing a list of found objects
      */
     @RequestMapping("/adresseoplysninger")
+    public void getAddressData(HttpServletRequest request, HttpServletResponse response) throws DataFordelerException, IOException {
+        String payload = this.getAddressData(request);
+        setHeaders(response);
+        response.getWriter().write(payload);
+    }
+
     public String getAddressData(HttpServletRequest request) throws DataFordelerException {
         String addressUUID = request.getParameter(PARAM_ADDRESS);
         DafoUserDetails user = dafoUserManager.getUserFromRequest(request);
@@ -619,5 +650,9 @@ public class AdresseService {
     private static void setQueryNoLimit(Query query) {
         query.setPage(1);
         query.setPageSize(Integer.MAX_VALUE);
+    }
+    private static void setHeaders(HttpServletResponse response) {
+        response.setHeader("Access-Control-Allow-Origin", "*");
+        response.setHeader("Content-Type", "application/json; charset=utf-8");
     }
 }
