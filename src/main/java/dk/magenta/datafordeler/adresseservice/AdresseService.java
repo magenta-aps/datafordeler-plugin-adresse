@@ -653,6 +653,6 @@ public class AdresseService {
     }
     private static void setHeaders(HttpServletResponse response) {
         response.setHeader("Access-Control-Allow-Origin", "*");
-        response.setHeader("Content-Type", "application/json");
+        response.setHeader("Content-Type", "application/json; charset=utf-8");
     }
 }
