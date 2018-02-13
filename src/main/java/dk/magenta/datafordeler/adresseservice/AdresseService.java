@@ -280,16 +280,27 @@ public class AdresseService {
             if (!addressEntities.isEmpty()) {
                 HashMap<Identification, BNumberEntity> bNumberMap = getBNumbers(session, addressEntities);
 
+                // Dedup entiteter - kun 1 pr husnummer (p.t. er der en pr. dør/etage osv)
+                HashSet<String> seenHouseNumbers = new HashSet<>();
+
                 for (AddressEntity addressEntity : addressEntities) {
                     ObjectNode addressNode = objectMapper.createObjectNode();
                     Set<DataItem> addressDataItems = addressEntity.getCurrent();
                     addressNode.set(OUTPUT_HOUSENUMBER, null);
                     addressNode.set(OUTPUT_BNUMBER, null);
                     addressNode.set(OUTPUT_BCALLNAME, null);
+                    boolean seenBefore = false;
                     for (DataItem dataItem : addressDataItems) {
                         AddressData addressData = (AddressData) dataItem;
                         if (addressData.getHouseNumber() != null) {
-                            addressNode.put(OUTPUT_HOUSENUMBER, addressData.getHouseNumber());
+                            String houseNumber = addressData.getHouseNumber();
+                            if (seenHouseNumbers.contains(houseNumber)) {
+                                seenBefore = true;
+                                break;
+                            } else {
+                                seenHouseNumbers.add(houseNumber);
+                                addressNode.put(OUTPUT_HOUSENUMBER, houseNumber);
+                            }
                         }
                         if (addressData.getbNumber() != null) {
                             BNumberEntity bNumberEntity = bNumberMap.get(addressData.getbNumber());
@@ -304,7 +315,9 @@ public class AdresseService {
                             }
                         }
                     }
-                    results.add(addressNode);
+                    if (!seenBefore) {
+                        results.add(addressNode);
+                    }
                 }
             }
             return results.toString();
