@@ -74,6 +74,7 @@
               "uuid": "3a205cdf-f044-4853-a613-a156471e7c72",
               "domaene": "https://data.gl/gladdreg/state/1/rest/"
             },
+            "residence": true,
             "registration_user": null,
             "sumiffiik_domain": "https://data.gl/najugaq/address",
             "note": "Kilde UID=>13583< Lok>Nuuk< Bnr>398< Vej>Abel Egedip Aqqutaa< Vej#>5< Hus#>5< Etage>< Side>< Blk><"
