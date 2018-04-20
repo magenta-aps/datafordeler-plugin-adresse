@@ -308,20 +308,30 @@ public class AdresseServiceTest {
                 String.class
         );
         Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+
+        String expected1 = "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955,\"etage\":\"1\",\"doer\":null,\"bolig\":null}";
+        String expected2 = "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3b\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955,\"etage\":\"2\",\"doer\":null,\"bolig\":true}";
+
+        Assert.assertTrue(
+        "Non-matching response "+response.getBody(),
+        objectMapper.readTree(expected1).equals(
+                objectMapper.readTree(response.getBody())
+        ));
+
+
+        response = restTemplate.exchange(
+                "/adresse/adresseoplysninger/?adresse=6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3b",
+                HttpMethod.GET,
+                httpEntity,
+                String.class
+        );
+        Assert.assertEquals(HttpStatus.OK, response.getStatusCode());
+
         Assert.assertTrue(
                 "Non-matching response "+response.getBody(),
-                objectMapper.readTree(
-                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955,\"etage\":\"1\",\"doer\":null,\"benyttelsestype\":null}," +
-                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3b\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955,\"etage\":\"2\",\"doer\":null,\"benyttelsestype\":null}").equals(
+                objectMapper.readTree(expected2).equals(
                         objectMapper.readTree(response.getBody())
-                ) ||
-                        objectMapper.readTree(
-                                "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3b\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955,\"etage\":\"2\",\"doer\":null,\"benyttelsestype\":null}," +
-                                        "{\"uuid\":\"6921fbb1-ddd7-4c7c-bb98-bbf63ace6a3a\",\"husnummer\":\"05\",\"b_nummer\":\"293\",\"vej_uuid\":\"e4dc6c09-baae-40b1-8696-57771b2f7a81\",\"vejkode\":1,\"vejnavn\":\"Aadarujuup Aqquserna\",\"lokalitet\":\"4d9cd2a0-89f1-4acc-a259-4fd139006d87\",\"lokalitetsnavn\":\"Paamiut\",\"kommunekode\":955,\"etage\":\"1\",\"doer\":null,\"benyttelsestype\":null}").equals(
-                                objectMapper.readTree(response.getBody())
-                        )
-        );
-
+                ));
     }
 
 
