@@ -8,11 +8,9 @@ import dk.magenta.datafordeler.core.exception.DataFordelerException;
 import dk.magenta.datafordeler.core.exception.HttpNotFoundException;
 import dk.magenta.datafordeler.core.exception.InvalidClientInputException;
 import dk.magenta.datafordeler.core.exception.MissingParameterException;
-import dk.magenta.datafordeler.core.fapi.ParameterMap;
 import dk.magenta.datafordeler.core.fapi.Query;
 import dk.magenta.datafordeler.core.user.DafoUserDetails;
 import dk.magenta.datafordeler.core.user.DafoUserManager;
-import dk.magenta.datafordeler.core.util.ListHashMap;
 import dk.magenta.datafordeler.core.util.LoggerHelper;
 import dk.magenta.datafordeler.gladdrreg.data.address.AddressData;
 import dk.magenta.datafordeler.gladdrreg.data.address.AddressEntity;
@@ -83,7 +81,7 @@ public class AdresseService {
     public static final String OUTPUT_HOUSENUMBER = "husnummer";
     public static final String OUTPUT_FLOOR = "etage";
     public static final String OUTPUT_DOOR = "doer";
-    public static final String OUTPUT_USAGE = "benyttelsestype";
+    public static final String OUTPUT_RESIDENCE = "bolig";
 
 
 
@@ -304,13 +302,15 @@ public class AdresseService {
                         }
                         if (addressData.getbNumber() != null) {
                             BNumberEntity bNumberEntity = bNumberMap.get(addressData.getbNumber());
-                            for (DataItem bNumberDataItem : bNumberEntity.getCurrent()) {
-                                BNumberData bNumberData = (BNumberData) bNumberDataItem;
-                                if (bNumberData.getCode() != null) {
-                                    addressNode.put(OUTPUT_BNUMBER, bNumberData.getCode());
-                                }
-                                if (bNumberData.getCallname() != null && !bNumberData.getCallname().isEmpty()) {
-                                    addressNode.put(OUTPUT_BCALLNAME, bNumberData.getCallname());
+                            if (bNumberEntity != null) {
+                                for (DataItem bNumberDataItem : bNumberEntity.getCurrent()) {
+                                    BNumberData bNumberData = (BNumberData) bNumberDataItem;
+                                    if (bNumberData.getCode() != null) {
+                                        addressNode.put(OUTPUT_BNUMBER, bNumberData.getCode());
+                                    }
+                                    if (bNumberData.getCallname() != null && !bNumberData.getCallname().isEmpty()) {
+                                        addressNode.put(OUTPUT_BCALLNAME, bNumberData.getCallname());
+                                    }
                                 }
                             }
                         }
@@ -391,6 +391,7 @@ public class AdresseService {
                     addressNode.set(OUTPUT_FLOOR, null);
                     addressNode.set(OUTPUT_DOOR, null);
                     addressNode.set(OUTPUT_BNUMBER, null);
+                    addressNode.set(OUTPUT_RESIDENCE, null);
                     for (DataItem dataItem : addressDataItems) {
                         AddressData addressData = (AddressData) dataItem;
                         if (addressData.getHouseNumber() != null) {
@@ -404,10 +405,12 @@ public class AdresseService {
                         }
                         if (addressData.getbNumber() != null) {
                             BNumberEntity bNumberEntity = bNumberMap.get(addressData.getbNumber());
-                            for (DataItem bNumberDataItem : bNumberEntity.getCurrent()) {
-                                BNumberData bNumberData = (BNumberData) bNumberDataItem;
-                                if (bNumberData.getCode() != null) {
-                                    addressNode.put(OUTPUT_BNUMBER, bNumberData.getCode());
+                            if (bNumberEntity != null) {
+                                for (DataItem bNumberDataItem : bNumberEntity.getCurrent()) {
+                                    BNumberData bNumberData = (BNumberData) bNumberDataItem;
+                                    if (bNumberData.getCode() != null) {
+                                        addressNode.put(OUTPUT_BNUMBER, bNumberData.getCode());
+                                    }
                                 }
                             }
                         }
@@ -443,8 +446,8 @@ public class AdresseService {
         loggerHelper.info(
                 "Incoming REST request for AddressService.addressdata with address {}", addressUUID
         );
-        checkParameterExistence(PARAM_ROAD, addressUUID);
-        UUID address = parameterAsUUID(PARAM_ROAD, addressUUID);
+        checkParameterExistence(PARAM_ADDRESS, addressUUID);
+        UUID address = parameterAsUUID(PARAM_ADDRESS, addressUUID);
 
         Session session = sessionManager.getSessionFactory().openSession();
         try {
@@ -469,7 +472,7 @@ public class AdresseService {
                 addressNode.set(OUTPUT_LOCALITYUUID, null);
                 addressNode.set(OUTPUT_LOCALITYNAME, null);
                 addressNode.set(OUTPUT_MUNICIPALITYCODE, null);
-                addressNode.set(OUTPUT_USAGE, null);
+                addressNode.set(OUTPUT_RESIDENCE, null);
                 for (DataItem dataItem : addressEntity.getCurrent()) {
                     AddressData addressData = (AddressData) dataItem;
                     if (addressData.getHouseNumber() != null) {
@@ -481,33 +484,42 @@ public class AdresseService {
                     if (addressData.getRoom() != null && !addressData.getRoom().isEmpty()) {
                         addressNode.put(OUTPUT_DOOR, addressData.getRoom());
                     }
+                    if (addressData.getResidence() != null) {
+                        addressNode.put(OUTPUT_RESIDENCE, addressData.getResidence());
+                    }
                     if (addressData.getbNumber() != null) {
                         BNumberEntity bNumberEntity = bNumberMap.get(addressData.getbNumber());
-                        for (DataItem bNumberDataItem : bNumberEntity.getCurrent()) {
-                            BNumberData bNumberData = (BNumberData) bNumberDataItem;
-                            if (bNumberData.getCode() != null) {
-                                addressNode.put(OUTPUT_BNUMBER, bNumberData.getCode());
+                        if (bNumberEntity != null) {
+                            for (DataItem bNumberDataItem : bNumberEntity.getCurrent()) {
+                                BNumberData bNumberData = (BNumberData) bNumberDataItem;
+                                if (bNumberData.getCode() != null) {
+                                    addressNode.put(OUTPUT_BNUMBER, bNumberData.getCode());
+                                }
                             }
                         }
                     }
                     if (addressData.getRoad() != null && roadMap.keySet().contains(addressData.getRoad())) {
                         RoadEntity roadEntity = roadMap.get(addressData.getRoad());
-                        addressNode.put(OUTPUT_ROADUUID, roadEntity.getUUID().toString());
-                        for (DataItem roadDataItem : roadEntity.getCurrent()) {
-                            RoadData roadData = (RoadData) roadDataItem;
-                            if (roadData.getCode() != 0) {
-                                addressNode.put(OUTPUT_ROADCODE, roadData.getCode());
-                            }
-                            if (roadData.getName() != null && !roadData.getName().isEmpty()) {
-                                addressNode.put(OUTPUT_ROADNAME, roadData.getName());
-                            }
-                            if (roadData.getLocation() != null) {
-                                LocalityEntity localityEntity = localityMap.get(roadData.getLocation());
-                                addressNode.put(OUTPUT_LOCALITYUUID, localityEntity.getUUID().toString());
-                                for (DataItem localityDataItem : localityEntity.getCurrent()) {
-                                    LocalityData localityData = (LocalityData) localityDataItem;
-                                    if (localityData.getName() != null && !localityData.getName().isEmpty()) {
-                                        addressNode.put(OUTPUT_LOCALITYNAME, localityData.getName());
+                        if (roadEntity != null) {
+                            addressNode.put(OUTPUT_ROADUUID, roadEntity.getUUID().toString());
+                            for (DataItem roadDataItem : roadEntity.getCurrent()) {
+                                RoadData roadData = (RoadData) roadDataItem;
+                                if (roadData.getCode() != 0) {
+                                    addressNode.put(OUTPUT_ROADCODE, roadData.getCode());
+                                }
+                                if (roadData.getName() != null && !roadData.getName().isEmpty()) {
+                                    addressNode.put(OUTPUT_ROADNAME, roadData.getName());
+                                }
+                                if (roadData.getLocation() != null) {
+                                    LocalityEntity localityEntity = localityMap.get(roadData.getLocation());
+                                    if (localityEntity != null) {
+                                        addressNode.put(OUTPUT_LOCALITYUUID, localityEntity.getUUID().toString());
+                                        for (DataItem localityDataItem : localityEntity.getCurrent()) {
+                                            LocalityData localityData = (LocalityData) localityDataItem;
+                                            if (localityData.getName() != null && !localityData.getName().isEmpty()) {
+                                                addressNode.put(OUTPUT_LOCALITYNAME, localityData.getName());
+                                            }
+                                        }
                                     }
                                 }
                             }
