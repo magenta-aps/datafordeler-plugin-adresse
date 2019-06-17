@@ -28,9 +28,9 @@ import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityRegistrat
 import dk.magenta.datafordeler.gladdrreg.data.road.RoadData;
 import dk.magenta.datafordeler.gladdrreg.data.road.RoadEntity;
 import dk.magenta.datafordeler.gladdrreg.data.road.RoadQuery;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.hibernate.Session;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -55,7 +55,7 @@ public class AdresseService {
     @Autowired
     private ObjectMapper objectMapper;
 
-    private Logger log = LoggerFactory.getLogger(AdresseService.class);
+    private Logger log = LogManager.getLogger(AdresseService.class);
 
     public static final String PARAM_MUNICIPALITY = "kommune";
     public static final String PARAM_LOCALITY = "lokalitet";
@@ -137,8 +137,7 @@ public class AdresseService {
     public String getLocalities(HttpServletRequest request) throws DataFordelerException {
         String municipalityCode = request.getParameter(PARAM_MUNICIPALITY);
         DafoUserDetails user = dafoUserManager.getUserFromRequest(request);
-        LoggerHelper loggerHelper = new LoggerHelper(log, request, user);
-        loggerHelper.info(
+        log.info(
                 "Incoming REST request for AddressService.locality with municipality {}", municipalityCode
         );
         checkParameterExistence(PARAM_MUNICIPALITY, municipalityCode);
@@ -194,8 +193,7 @@ public class AdresseService {
     public String getRoads(HttpServletRequest request) throws DataFordelerException {
         String localityUUID = request.getParameter(PARAM_LOCALITY);
         DafoUserDetails user = dafoUserManager.getUserFromRequest(request);
-        LoggerHelper loggerHelper = new LoggerHelper(log, request, user);
-        loggerHelper.info(
+        log.info(
                 "Incoming REST request for AddressService.road with locality {}", localityUUID
         );
         checkParameterExistence(PARAM_LOCALITY, localityUUID);
@@ -258,8 +256,7 @@ public class AdresseService {
     public String getBuildings(HttpServletRequest request) throws DataFordelerException {
         String roadUUID = request.getParameter(PARAM_ROAD);
         DafoUserDetails user = dafoUserManager.getUserFromRequest(request);
-        LoggerHelper loggerHelper = new LoggerHelper(log, request, user);
-        loggerHelper.info(
+        log.info(
                 "Incoming REST request for AddressService.building with road {}", roadUUID
         );
         checkParameterExistence(PARAM_ROAD, roadUUID);
@@ -345,8 +342,7 @@ public class AdresseService {
         String houseNumber = request.getParameter(PARAM_HOUSE);
         String buildingNumber = request.getParameter(PARAM_BNR);
         DafoUserDetails user = dafoUserManager.getUserFromRequest(request);
-        LoggerHelper loggerHelper = new LoggerHelper(log, request, user);
-        loggerHelper.info(
+        log.info(
                 "Incoming REST request for AddressService.address with road {}, houseNumber {}, bNumber {}", roadUUID, houseNumber, buildingNumber
         );
         checkParameterExistence(PARAM_ROAD, roadUUID);
@@ -442,8 +438,7 @@ public class AdresseService {
     public String getAddressData(HttpServletRequest request) throws DataFordelerException {
         String addressUUID = request.getParameter(PARAM_ADDRESS);
         DafoUserDetails user = dafoUserManager.getUserFromRequest(request);
-        LoggerHelper loggerHelper = new LoggerHelper(log, request, user);
-        loggerHelper.info(
+        log.info(
                 "Incoming REST request for AddressService.addressdata with address {}", addressUUID
         );
         checkParameterExistence(PARAM_ADDRESS, addressUUID);
