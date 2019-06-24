@@ -6,28 +6,30 @@
 
     <groupId>dk.magenta.datafordeler</groupId>
     <artifactId>adresseservice</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>1.1</version>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
+        <java.version>11</java.version>
         <log4j.version>2.1</log4j.version>
-        <spring.version>4.3.6.RELEASE</spring.version>
-        <spring.boot.version>1.5.1.RELEASE</spring.boot.version>
+        <spring.version>5.1.7.RELEASE</spring.version>
+        <spring.boot.version>2.1.5.RELEASE</spring.boot.version>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
     </properties>
 
     <dependencies>
         <dependency>
             <groupId>dk.magenta.datafordeler</groupId>
             <artifactId>datafordeler-core</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>dk.magenta.datafordeler</groupId>
             <artifactId>datafordeler-plugin-gladdrreg</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>1.1</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -39,7 +41,7 @@
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring-web</artifactId>
-            <version>4.3.10.RELEASE</version>
+            <version>${spring.version}</version>
         </dependency>
         <dependency>
             <groupId>junit</groupId>
@@ -54,10 +56,11 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.3</version>
+                <version>3.8.1</version>
                 <configuration>
                     <source>${java.version}</source>
                     <target>${java.version}</target>
+                    <forceJavacCompilerUse>true</forceJavacCompilerUse>
                 </configuration>
             </plugin>
             <plugin>
@@ -66,7 +69,7 @@
                 <configuration>
                     <outputDirectory>../jar</outputDirectory>
                 </configuration>
-                <version>2.6</version>
+                <version>3.1.2</version>
             </plugin>
         </plugins>
     </build>
