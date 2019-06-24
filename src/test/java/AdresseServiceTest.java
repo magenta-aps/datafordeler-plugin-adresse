@@ -20,7 +20,7 @@ import dk.magenta.datafordeler.gladdrreg.data.locality.LocalityRegistration;
 import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityEntity;
 import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityEntityManager;
 import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityRegistration;
-import dk.magenta.datafordeler.gladdrreg.data.road.RoadEntity;
+import dk.magenta.datafordeler.gladdrreg.data.road.GladdrregRoadEntity;
 import dk.magenta.datafordeler.gladdrreg.data.road.RoadEntityManager;
 import dk.magenta.datafordeler.gladdrreg.data.road.RoadRegistration;
 import org.hibernate.Session;
@@ -400,7 +400,7 @@ public class AdresseServiceTest {
 
     private void loadRoad(Session session) throws DataFordelerException, IOException {
         InputStream testData = AdresseServiceTest.class.getResourceAsStream("/road.json");
-        RoadEntityManager roadEntityManager = (RoadEntityManager) gladdrregPlugin.getRegisterManager().getEntityManager(RoadEntity.schema);
+        RoadEntityManager roadEntityManager = (RoadEntityManager) gladdrregPlugin.getRegisterManager().getEntityManager(GladdrregRoadEntity.schema);
         List<? extends Registration> regs = roadEntityManager.parseData(testData, new ImportMetadata());
         testData.close();
         for (Registration registration : regs) {

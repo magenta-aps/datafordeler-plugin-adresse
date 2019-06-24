@@ -26,7 +26,7 @@ import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityEffect;
 import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityEntity;
 import dk.magenta.datafordeler.gladdrreg.data.municipality.MunicipalityRegistration;
 import dk.magenta.datafordeler.gladdrreg.data.road.RoadData;
-import dk.magenta.datafordeler.gladdrreg.data.road.RoadEntity;
+import dk.magenta.datafordeler.gladdrreg.data.road.GladdrregRoadEntity;
 import dk.magenta.datafordeler.gladdrreg.data.road.RoadQuery;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -204,9 +204,9 @@ public class AdresseService {
         query.setLocality(locality.toString());
         Session session = sessionManager.getSessionFactory().openSession();
         try {
-            List<RoadEntity> roads = QueryManager.getAllEntities(session, query, RoadEntity.class);
+            List<GladdrregRoadEntity> roads = QueryManager.getAllEntities(session, query, GladdrregRoadEntity.class);
             ArrayNode results = objectMapper.createArrayNode();
-            for (RoadEntity road : roads) {
+            for (GladdrregRoadEntity road : roads) {
                 Set<DataItem> dataItems = road.getCurrent();
                 ObjectNode roadNode = objectMapper.createObjectNode();
                 roadNode.put(OUTPUT_UUID, road.getUUID().toString());
@@ -453,7 +453,7 @@ public class AdresseService {
             AddressEntity addressEntity = QueryManager.getEntity(session, address, AddressEntity.class);
             if (addressEntity != null) {
                 HashMap<Identification, BNumberEntity> bNumberMap = getBNumbers(session, Collections.singletonList(addressEntity));
-                HashMap<Identification, RoadEntity> roadMap = getRoads(session, Collections.singletonList(addressEntity));
+                HashMap<Identification, GladdrregRoadEntity> roadMap = getRoads(session, Collections.singletonList(addressEntity));
                 HashMap<Identification, LocalityEntity> localityMap = getLocalities(session, roadMap.values());
 
                 addressNode.put(OUTPUT_UUID, addressEntity.getUUID().toString());
@@ -494,7 +494,7 @@ public class AdresseService {
                         }
                     }
                     if (addressData.getRoad() != null && roadMap.keySet().contains(addressData.getRoad())) {
-                        RoadEntity roadEntity = roadMap.get(addressData.getRoad());
+                        GladdrregRoadEntity roadEntity = roadMap.get(addressData.getRoad());
                         if (roadEntity != null) {
                             addressNode.put(OUTPUT_ROADUUID, roadEntity.getUUID().toString());
                             for (DataItem roadDataItem : roadEntity.getCurrent()) {
@@ -572,7 +572,7 @@ public class AdresseService {
 
 
 
-    private static HashMap<Identification, RoadEntity> getRoads(Session session, Collection<AddressEntity> addressEntities) {
+    private static HashMap<Identification, GladdrregRoadEntity> getRoads(Session session, Collection<AddressEntity> addressEntities) {
         HashSet<Identification> identifications = new HashSet<>();
         for (AddressEntity addressEntity : addressEntities) {
             Set<DataItem> addressDataItems = addressEntity.getCurrent();
@@ -586,17 +586,17 @@ public class AdresseService {
         return getRoads(session, identifications);
     }
 
-    private static HashMap<Identification, RoadEntity> getRoads(Session session, HashSet<Identification> identifications) {
-        HashMap<Identification, RoadEntity> roadMap = new HashMap<>();
+    private static HashMap<Identification, GladdrregRoadEntity> getRoads(Session session, HashSet<Identification> identifications) {
+        HashMap<Identification, GladdrregRoadEntity> roadMap = new HashMap<>();
         if (!identifications.isEmpty()) {
             org.hibernate.query.Query<Object[]> bQuery = session.createQuery(
-                    "SELECT DISTINCT e, e.identification FROM " + RoadEntity.class.getCanonicalName() + " e " +
+                    "SELECT DISTINCT e, e.identification FROM " + GladdrregRoadEntity.class.getCanonicalName() + " e " +
                             "WHERE e.identification in (:identifications)"
             );
             bQuery.setParameterList("identifications", identifications);
 
             for (Object[] resultItem : bQuery.getResultList()) {
-                RoadEntity roadEntity = (RoadEntity) resultItem[0];
+                GladdrregRoadEntity roadEntity = (GladdrregRoadEntity) resultItem[0];
                 Identification identification = (Identification) resultItem[1];
                 roadMap.put(identification, roadEntity);
             }
@@ -604,9 +604,9 @@ public class AdresseService {
         return roadMap;
     }
 
-    private static HashMap<Identification, LocalityEntity> getLocalities(Session session, Collection<RoadEntity> roadEntities) {
+    private static HashMap<Identification, LocalityEntity> getLocalities(Session session, Collection<GladdrregRoadEntity> roadEntities) {
         HashSet<Identification> identifications = new HashSet<>();
-        for (RoadEntity roadEntity : roadEntities) {
+        for (GladdrregRoadEntity roadEntity : roadEntities) {
             Set<DataItem> roadDataItems = roadEntity.getCurrent();
             for (DataItem dataItem : roadDataItems) {
                 RoadData data = (RoadData) dataItem;
